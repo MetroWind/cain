@@ -1,16 +1,12 @@
-const e = React.createElement;
+function categoryName(category)
+{
+    return category["data"]["name"];
+}
 
-const data = {"name": "root",
-              "key": 0,
-              "children": [
-                  {"name": "aaa",
-                   "key": 1,
-                   "children": [
-                       {"name": "bbb", "key": 2},
-                       {"name": "ccc", "key": 3},
-                   ]},
-                  {"name": "ddd", "key": 4, "children": []}
-              ]};
+function categoryID(category)
+{
+    return category["data"]["id"];
+}
 
 class FoldIndicator extends React.Component
 {
@@ -61,7 +57,6 @@ class TreeItem extends React.Component
     render()
     {
         let selection = this.props["getSelection"]();
-        console.log(`Drawing item ${this.props["data"]["key"]}, selection is ${selection}, selected is ${this.props["selected"]}`);
         let children = [];
         if(!this.state["folded"])
         {
@@ -70,9 +65,9 @@ class TreeItem extends React.Component
                 for(let i in this.props["data"]["children"])
                 {
                     let child = this.props["data"]["children"][i];
-                    let props = {"data": child, "key": child["key"],
+                    let props = {"data": child, "key": categoryID(child),
                                  "depth": this.props["depth"] + 1,
-                                 "selected": selection === child["key"],
+                                 "selected": selection === categoryID(child),
                                  "onSelect": this.props["onSelect"],
                                  "getSelection": this.props["getSelection"],
                                 };
@@ -87,6 +82,7 @@ class TreeItem extends React.Component
         {
             class_name = "TreeItemSelected";
         }
+
         return e("div", null,
                  e("div", {"style": {"marginLeft": this.props["depth"] * 16}},
                    e(FoldIndicator, {"onClick": () => {
@@ -94,13 +90,14 @@ class TreeItem extends React.Component
                    }}),
                    e("span", {"className": class_name,
                               "onClick": () => {
-                                  this.props["onSelect"](this.props["data"]["key"]);
+                                  this.props["onSelect"](categoryID(this.props["data"]));
                               }},
-                     this.props["data"]["name"])),
+                     categoryName(this.props["data"]))),
                  children);
     }
 }
 
+// Props: data, onSelect, getSelection
 class TreeView extends React.Component
 {
     constructor(props)
@@ -111,26 +108,13 @@ class TreeView extends React.Component
         this.getSelection = this.getSelection.bind(this);
     }
 
-    onSelect(key)
-    {
-        console.log(`Selected item ${key}.`);
-        this.setState({"selected": key});
-    }
-
-    getSelection()
-    {
-        return this.state["selected"];
-    }
-
     render()
     {
         return e(TreeItem, {"data": this.props["data"], "depth": 0,
-                            "selected": this.getSelection() === this.props["data"]["key"],
-                            "onSelect": this.onSelect,
-                            "getSelection": this.getSelection,
+                            "selected": this.props["getSelection"]() ===
+                                categoryID(this.props["data"]),
+                            "onSelect": this.props["onSelect"],
+                            "getSelection": this.props["getSelection"],
                            });
     }
 }
-
-const domContainer = document.querySelector('#Main');
-ReactDOM.render(e(TreeView, {"data": data, "selection": 0}), domContainer);
