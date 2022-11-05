@@ -182,6 +182,10 @@ impl DataManager
         Ok(cat_tree)
     }
 
+    pub fn addEntry(&self, uri: &str, categories: &[i64]) -> Result<i64, Error>
+    {
+    }
+
 }
 
 // ========== Tests =================================================>
