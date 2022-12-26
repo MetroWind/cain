@@ -27,14 +27,14 @@ Twitter and (the new) Reddit are two of the most infamous ones. As of
 now Cain does support Twitter, but not others.
 
 For normal web pages, Cain uses
-[Monolith](https://github.com/Y2Z/monolith) to archive it.
+https://github.com/Y2Z/monolith[Monolith] to archive it.
 
 == Installation
 
 Cargo.
 
-[Monolith](https://github.com/Y2Z/monolith) is needed to archive
-normal web pages.
+https://github.com/Y2Z/monolith[Monolith] is needed to archive normal
+web pages.
 
 == Usage
 
