@@ -1,0 +1,196 @@
+= Cain
+A naively simple personal web resource archive system.
+
+== Motivation
+
+I need to save web pages for later reference — a frequent need for a
+keyboard warrior. There are two usual ways to do this: bookmarking and
+read-later programs. The problem of bookmarking is that web pages
+disappear more frequently than one might think. I started building my
+bookmarks that are in my browser since more than a decade ago, and
+around 1/4 of them are not accessible now. The problem with read-later
+programs is the lack of structure. Usually read-later is just a linear
+stream of links. Therefore, I need something that stores web resources
+locally, and arranges them in a tree.
+
+== Design
+
+=== Glossary
+
+Record:: An offline copy of the content at an URL, which is a
+collection of files.
+
+Resource:: A file in a record as part of the centent of an URL. A
+record consists multiple resources. For example a tweet with an image
+has two resources: the text of the tweet, and the image.
+
+Category:: A label where a group of records belong. A category can
+have sub-categories. The whole set of categories form a tree. A record
+can only belong to one category. Because of this, a category can be
+uniquely identified by a path from the root category to itself. Since
+there is only one root category, it is omitted notationally, and thus
+a categrory is denoted like this:
+“category/sub-category/sub-category”.
++
+In this doc I will refer to the path leading to the category a record
+belongs to as simply the “category of this record”.
+
+=== Interface
+
+Ideally this should be a web app with a 3-column UI. The left column
+displays a tree of categories; the middle column is a list of entries
+belonging to the selected category; and the right column shows the
+content of the selected record. I started working on a tree view with
+React, and was quickly reminded how much I hate Writing GUI and
+JavaScript. I had no desire to continue.
+
+So the ideal quickly bowed to reality, and now I just want to have a
+simple CLI program that takes an URL and save it locally somewhere. It
+uses the file system for the category tree. Each record is a directory,
+in which stores all the resources belonging to this record. A normal
+web page will be just a single file; things like tweets might be
+multiple files. There is a metadata file in each record, recording the
+title, date, etc. of the record. A invocation of the program might be
+like this:
+
+----
+the-program --category category/subcategory/subcategory --title "A title" http://some.url/
+----
+
+=== Data storage
+
+A configuration file written by the user provides a “root dir”, where
+all records are stored. Records are placed under their corresponding
+category. In this storage scheme categories are just sub-directories
+under the root dir, and the category path coincides with the relative
+path from the root dir.
+
+A record itself is a directory under its category, which contains all
+of its resources.
+
+=== Record recording
+
+For normal web pages, an record should just have a single HTML file.
+This can be done with https://github.com/Y2Z/monolith[Monolith].
+
+For YouTube videos, youtube-dl or yt-dlp should be used to download
+the video.
+
+For tweets, I need to write a custom scraper using the hidden
+guest API. See https://github.com/nogira/deno-twitter-guest-api[here]
+for an example. A guest token can be acquired with a POST to
+
+----
+https://api.twitter.com/1.1/guest/activate.json
+----
+
+This request should have an auth header `Authorization: Bearer xxxxxx`.
+The bearer string can be found by normally browsing Twitter in a
+browser, and looking at the requests. The response of this request should look like
+
+[source,json]
+----
+{"guest_token":"xxxxxxxx"}
+----
+
+Once a guest token is acquired, a tweet can be retrieved with a GET
+request to
+
+----
+https://api.twitter.com/1.1/statuses/show.json?id={tweet_id}
+----
+
+With the following headers:
+
+- `Authorization`, the bearer string
+- `X-guest-token`, the guest token.
+
+An record will include a piece of text, maybe some
+images, and maybe some videos. The text is available in the Twitter
+API response directly. The response contains direct URIs to the images
+and videos in the `extended_entities` node. For videos, multiple
+bitrate versions may be provided. The one with the highest bitrate
+should be downloaded. Example of a embeded video:
+
+[source,json]
+----
+"video_info": {
+  "aspect_ratio": [
+    40,
+    67
+  ],
+  "duration_millis": 97592,
+  "variants": [
+    {
+      "bitrate": 632000,
+      "content_type": "video/mp4",
+      "url": "https://video.twimg.com/amplify_video/1588543507311996929/vid/320x536/ujBavr67Z2VZUagO.mp4?tag=14"
+    },
+    {
+      "content_type": "application/x-mpegURL",
+      "url": "https://video.twimg.com/amplify_video/1588543507311996929/pl/ZdxpxnGjfA0fpDt3.m3u8?tag=14&container=fmp4"
+    },
+    {
+      "bitrate": 950000,
+      "content_type": "video/mp4",
+      "url": "https://video.twimg.com/amplify_video/1588543507311996929/vid/480x804/KlTxt2p3KziCwwfH.mp4?tag=14"
+    },
+    {
+      "bitrate": 2176000,
+      "content_type": "video/mp4",
+      "url": "https://video.twimg.com/amplify_video/1588543507311996929/vid/720x1206/BCPKmPty1q4-tA9B.mp4?tag=14"
+    }
+  ]
+}
+----
+
+The images and videos should be downloaded using wget. For all of
+these files, the file name should be Windows-compatible.
+
+=== The metadata file
+
+In each record, there is a metadata file named `metadata.xml` which
+contains the following info
+
+- The title of the record
+- The time (up to seconds, as a UNIX time stamp) when this record is
+  archived
+- The original URL of this record
+- The filename of each resource
+- The original URL of each resource
+
+As an example, the file may look like this:
+
+[source,xml]
+----
+<metadata>
+  <title>Some title</title>
+  <time>12345678</time>
+  <uri>http://some.url/</uri>
+  <resources>
+    <resource>
+      <file>file.name</file>
+      <uri>http://some.url/</uri>
+    </resource>
+    <resource>
+      <file>file.name</file>
+      <uri>http://some.url/</uri>
+    </resource>
+  </resources>
+<metadata>
+----
+
+=== Configuration
+
+The program reads configuration info from
+`~/.config/cain/config.toml`. The main point of configuration is the
+root directory of the locally stored web resources.
+
+The program also creates a `runtime.json` in the same directory of the
+configuration file to store the guest token. This file is completely
+managed by the program.
+
+== Future Outlook
+
+I will see how this simple plan works. I may gradually add more UI in
+the future.

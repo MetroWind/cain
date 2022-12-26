@@ -1,0 +1,55 @@
+= Cain
+MetroWind <chris.corsair@gmail.com>
+
+A naively simple personal web resource archive system.
+
+== Introduction
+
+Cain is a extremely simple tool to let you download and organize
+online resources (mainly web pages) for offline view. It takes a URL
+and downloads the resources referenced by it, and place them in a
+local directory. This forms one record. These records are organized in
+a category tree, which is just a directory structure under some
+pre-defined root directory (specified in the config file).
+
+As the web evolved, for better or for worse, archiving a web page is
+not as simple as running “wget” on its URL. Some “modern” web pages
+are actually empty, with its content filled at the client side by some
+JavaScript code. Web developers do this usually because this makes the
+website work like an app, where the frontend is not nessesarily HTML,
+and it relies on some API to communicate with the server. This is
+really bad for archiving, because we cannot just download the HTML
+itself in this case, which again is just empty. We need to access the
+content via the API, which is usually private or behind
+authentication.
+
+Twitter and (the new) Reddit are two of the most infamous ones. As of
+now Cain does support Twitter, but not others.
+
+For normal web pages, Cain uses
+[Monolith](https://github.com/Y2Z/monolith) to archive it.
+
+== Installation
+
+Cargo.
+
+[Monolith](https://github.com/Y2Z/monolith) is needed to archive
+normal web pages.
+
+== Usage
+
+Create a config file at `~/.config/cain/config.toml` with content:
+
+----
+root_dir = "/some/path"
+----
+
+As of now `root_dir` is the only config option.
+
+Run
+
+----
+cain record -c "category/subcategory" "Some Title" https://google.com/
+----
+
+to archive the Google main page under `category/subcategory`.
