@@ -75,6 +75,7 @@ fn cli() -> Result<(), Error>
                 .arg(clap::Arg::new("category")
                      .short('c')
                      .long("category")
+                     .default_value("")
                      .help("The category of the record. Default: \
                             Place record at root")))
         .subcommand(clap::Command::new("list")
@@ -89,7 +90,8 @@ fn cli() -> Result<(), Error>
         {
             let url = sub_opts.get_one::<String>("URL").unwrap();
             let title = sub_opts.get_one::<String>("TITLE").unwrap();
-            records::make(url, title, "", &config)?;
+            let cat = sub_opts.get_one::<String>("category").unwrap();
+            records::make(url, title, &cat, &config)?;
         },
         Some(("list", _)) =>
         {
