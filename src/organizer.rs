@@ -5,9 +5,9 @@ use std::path::{Path, PathBuf};
 use time::OffsetDateTime;
 use time::format_description::well_known::Iso8601;
 use serde::{Serialize, Deserialize};
-use md5::{Md5, Digest};
 use quick_xml::events::{Event, BytesEnd, BytesStart, BytesText};
 use quick_xml::{Reader, Writer};
+use md5::{Md5, Digest};
 
 use crate::error::Error;
 use crate::analyser::TempItem;
@@ -312,7 +312,7 @@ fn moveFile(from: &Path, to: &Path) -> Result<(), Error>
 
 /// Return the hash of some bytes as a hex literal string. This is for
 /// the purpose of file naming.
-fn hashData(data: &[u8]) -> String
+pub fn hashData(data: &[u8]) -> String
 {
     let mut hasher = Md5::new();
     hasher.update(data);

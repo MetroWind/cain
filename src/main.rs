@@ -12,10 +12,11 @@ mod twitter;
 mod webpage;
 
 use std::path::Path;
+use log::warn;
 
 use crate::error::Error;
 use crate::config::Config;
-use records::ListItem;
+use crate::records::ListItem;
 
 fn formatPath(path: &Path) -> Result<String, Error>
 {
@@ -36,23 +37,20 @@ fn getConfig() -> Result<Config, Error>
     let conf_dir = env::configDir();
     if let Err(e) = conf_dir
     {
-        eprintln!("WARNING: failed to find config dir: {}. \
-                   Using current dir as root...", e);
+        warn!("Failed to find config dir: {}. Using current dir as root...", e);
         return defaultConfWithCurrentDir();
     }
     let conf_dir = conf_dir.unwrap();
     if !conf_dir.exists()
     {
-        eprintln!("WARNING: config file not found. \
-                   Using current dir as root...");
+        warn!("Config file not found. Using current dir as root...");
         return defaultConfWithCurrentDir();
     }
 
     let conf_file = conf_dir.join("config.toml");
     if !conf_file.exists()
     {
-        eprintln!("WARNING: config file not found. \
-                   Using current dir as root...");
+        warn!("Config file not found. Using current dir as root...");
         return defaultConfWithCurrentDir();
     }
     Config::fromFile(&conf_file)
@@ -60,6 +58,9 @@ fn getConfig() -> Result<Config, Error>
 
 fn cli() -> Result<(), Error>
 {
+    simple_logger::init_with_level(log::Level::Info).map_err(
+        |_| rterr!("Failed to create logger"))?;
+
     let opts = clap::Command::new("Cain")
         .author("MetroWind")
         .about("A naively simple personal web resource archive system")
@@ -115,7 +116,7 @@ fn main()
 {
     if let Err(e) = cli()
     {
-        eprintln!("{}", e);
+        log::error!("{}", e);
         std::process::exit(1);
     }
     std::process::exit(0);

@@ -10,10 +10,18 @@ serde_json = ">=1"
 time = { version = ">=0.3", features = ["parsing", "formatting"] }
 url = ">=2.3"
 log = ">=0.4"
-toml = ">=0.5"
+# https://stackoverflow.com/q/74979033/782130
+toml = { git = "https://github.com/HarveyHunt/toml", branch = "dotted-table-parsing-toml" }
+# toml = ">=0.5"
 quick-xml = { version = ">=0.26", features = ["serialize"] }
 md-5 = ">=0.10"
 clap = ">=4"
+simple_logger = { version = ">=4", default-features = false, features = ["colors"] }
+rand = ">=0.8"
+percent-encoding = ">=2.2"
+hmac = ">=0.12"
+sha-1 = ">=0.10"
+base64 = ">=0.20"
 
 [dev-dependencies]
 anyhow = ">=1"

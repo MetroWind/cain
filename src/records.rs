@@ -6,7 +6,7 @@ use crate::organizer;
 use crate::twitter;
 use crate::webpage;
 use crate::organizer::createRecord;
-use crate::config::Config;
+use crate::config::{Config, TwitterAuth};
 
 pub enum ListItem
 {
@@ -88,14 +88,23 @@ pub fn listAll(category: &Path, config: &Config) -> Result<Vec<ListItem>, Error>
     Ok(result)
 }
 
-pub fn make(uri: &str, title: &str, category: &str, config: &Config) ->
+pub fn make(uri: &str, title: &str, category: &str, conf: &Config) ->
     Result<(), Error>
 {
     let u = url::Url::parse(uri).map_err(|_| rterr!("Invalid URL: {}", uri))?;
     let host = u.host_str().ok_or_else(|| rterr!("URL should have a host"))?;
     let items = if host == "twitter.com" || host == "www.twitter.com"
     {
-        let client = twitter::Client::new()?;
+        let client = match conf.twitter_auth.clone()
+        {
+            TwitterAuth::GuestToken =>
+                twitter::Client::new(twitter::GuestToken::new()?)?,
+            TwitterAuth::StaticToken { consumer_key, consumer_secret, access_token,
+                                       access_token_secret } =>
+                twitter::Client::new(twitter::StaticToken {
+                    consumer_key, consumer_secret, access_token,
+                    access_token_secret })?,
+        };
         client.analyse(uri)?
     }
     else
@@ -104,7 +113,7 @@ pub fn make(uri: &str, title: &str, category: &str, config: &Config) ->
         downloader.analyse(uri)?
     };
 
-    let full_path = config.root_dir.join(category).join(title);
+    let full_path = conf.root_dir.join(category).join(title);
     std::fs::create_dir_all(&full_path).map_err(
         |_| rterr!("Failed to create directory at {:?}", full_path))?;
 
