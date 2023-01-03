@@ -189,7 +189,7 @@ impl Client
         // default ureq will wait for the server to close socket when
         // reading. An agent can have a read timeout.
         let agent = ureq::builder()
-            .timeout_read(std::time::Duration::from_secs(2))
+            .timeout_read(std::time::Duration::from_secs(10))
             .build();
 
         let req = self.token.decorated(agent.get(&format!(
@@ -203,8 +203,10 @@ impl Client
             {
                 let mut bytes: Vec<u8> = Vec::with_capacity(1024);
                 // This could timeout.
+                debug!("Reading response...");
                 let _ = res.into_reader().take(10_000_000)
                     .read_to_end(&mut bytes);
+                debug!("Done.");
                 let payload = str::from_utf8(&bytes).unwrap();
 
                 if self.token.reauthenticate()
