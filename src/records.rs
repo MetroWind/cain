@@ -109,7 +109,8 @@ pub fn make(uri: &str, title: &str, category: &str, conf: &Config) ->
     }
     else
     {
-        let downloader = webpage::Downloader::new();
+        let downloader = webpage::Downloader::new(
+            conf.single_page_config.download_font);
         downloader.analyse(uri)?
     };
 

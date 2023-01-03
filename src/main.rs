@@ -78,17 +78,25 @@ fn cli() -> Result<(), Error>
                      .long("category")
                      .default_value("")
                      .help("The category of the record. Default: \
-                            Place record at root")))
+                            Place record at root"))
+                .arg(clap::Arg::new("download-font")
+                     .short('F')
+                     .long("download-font")
+                     .action(clap::ArgAction::SetTrue)
+                     .help("Download web fonts when using \
+                            the web page downloader.")))
         .subcommand(clap::Command::new("list")
                     .about("List all categories and records"))
         .get_matches();
 
-    let config = getConfig()?;
+    let mut config = getConfig()?;
 
     match opts.subcommand()
     {
         Some(("record", sub_opts)) =>
         {
+            config.single_page_config.download_font =
+                *sub_opts.get_one::<bool>("download-font").unwrap();
             let url = sub_opts.get_one::<String>("URL").unwrap();
             let title = sub_opts.get_one::<String>("TITLE").unwrap();
             let cat = sub_opts.get_one::<String>("category").unwrap();

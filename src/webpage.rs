@@ -5,11 +5,14 @@ use crate::analyser;
 use crate::analyser::TempItem;
 use crate::error::Error;
 
-pub struct Downloader {}
+pub struct Downloader
+{
+    download_font: bool
+}
 
 impl Downloader
 {
-    pub fn new() -> Self { Self {} }
+    pub fn new(download_font: bool) -> Self { Self { download_font } }
 }
 
 impl analyser::ResourceAnalyser for Downloader
@@ -21,12 +24,17 @@ impl analyser::ResourceAnalyser for Downloader
         temp_file.push("cain-monolith.html");
 
         // Download the URL to the temp file
-        let status = Command::new("monolith")
-            .args(&["--no-audio", "--isolate", "-o",
+        let mut proc = Command::new("monolith");
+        proc.args(&["--no-audio", "--isolate", "-o",
                     temp_file.to_str().ok_or_else(
-                        || rterr!("Empty output file for Monolith"))?,
-                    url])
-            .status().map_err(|e| rterr!("Failed to run Monolith: {}", e))?;
+                        || rterr!("Empty output file for Monolith"))?]);
+        if !self.download_font
+        {
+            proc.arg("--no-fonts");
+        }
+        proc.arg(url);
+        let status = proc.status().map_err(
+            |e| rterr!("Failed to run Monolith: {}", e))?;
         if status.success()
         {
             Ok(vec![TempItem::File(temp_file)])

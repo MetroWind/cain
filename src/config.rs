@@ -25,11 +25,27 @@ impl Default for TwitterAuth
 }
 
 #[derive(Deserialize, Clone)]
+pub struct SinglePageConfig
+{
+    pub download_font: bool
+}
+
+impl Default for SinglePageConfig
+{
+    fn default() -> Self
+    {
+        Self { download_font: false }
+    }
+}
+
+#[derive(Deserialize, Clone)]
 pub struct Config
 {
     pub root_dir: PathBuf,
-    // #[serde(default)]
+    #[serde(default)]
     pub twitter_auth: TwitterAuth,
+    #[serde(default)]
+    pub single_page_config: SinglePageConfig,
 }
 
 impl Config
@@ -50,6 +66,7 @@ impl Default for Config
         Self {
             root_dir: PathBuf::from("/"),
             twitter_auth: TwitterAuth::GuestToken,
+            single_page_config: SinglePageConfig::default(),
         }
     }
 }
