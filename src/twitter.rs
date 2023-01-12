@@ -318,7 +318,7 @@ mod tests
     #[test]
     fn analyse() -> Result<(), Error>
     {
-        let client = Client::new()?;
+        let client = Client::new(GuestToken::new()?)?;
         let items = client.analyse("https://twitter.com/MetroWind/status/1595694065353248768")?;
         assert_eq!(items.len(), 2);
         assert_eq!(items[0], TempItem::Text("刚刚剁手了这些…… https://t.co/WRoKBpQXyb".to_owned()));

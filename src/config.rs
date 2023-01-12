@@ -27,14 +27,15 @@ impl Default for TwitterAuth
 #[derive(Deserialize, Clone)]
 pub struct SinglePageConfig
 {
-    pub download_font: bool
+    pub download_font: bool,
+    pub disable_js: bool
 }
 
 impl Default for SinglePageConfig
 {
     fn default() -> Self
     {
-        Self { download_font: false }
+        Self { download_font: false, disable_js: false }
     }
 }
 

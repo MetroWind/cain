@@ -7,12 +7,16 @@ use crate::error::Error;
 
 pub struct Downloader
 {
-    download_font: bool
+    download_font: bool,
+    disable_js: bool,
 }
 
 impl Downloader
 {
-    pub fn new(download_font: bool) -> Self { Self { download_font } }
+    pub fn new(download_font: bool, disable_js: bool) -> Self
+    {
+        Self { download_font, disable_js }
+    }
 }
 
 impl analyser::ResourceAnalyser for Downloader
@@ -32,6 +36,11 @@ impl analyser::ResourceAnalyser for Downloader
         {
             proc.arg("--no-fonts");
         }
+        if self.disable_js
+        {
+            proc.arg("--no-js");
+        }
+
         proc.arg(url);
         let status = proc.status().map_err(
             |e| rterr!("Failed to run Monolith: {}", e))?;
@@ -56,7 +65,7 @@ mod tests
     #[test]
     fn analyse() -> Result<(), Error>
     {
-        let downloader = Downloader::new();
+        let downloader = Downloader::new(false, true);
         let items = downloader.analyse("http://example.org/")?;
         assert_eq!(items.len(), 1);
         match items[0]

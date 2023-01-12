@@ -84,6 +84,12 @@ fn cli() -> Result<(), Error>
                      .long("download-font")
                      .action(clap::ArgAction::SetTrue)
                      .help("Download web fonts when using \
+                            the web page downloader."))
+                .arg(clap::Arg::new("disable-js")
+                     .short('j')
+                     .long("disable-js")
+                     .action(clap::ArgAction::SetTrue)
+                     .help("Disable JavaScript when using \
                             the web page downloader.")))
         .subcommand(clap::Command::new("list")
                     .about("List all categories and records"))
@@ -97,6 +103,8 @@ fn cli() -> Result<(), Error>
         {
             config.single_page_config.download_font =
                 *sub_opts.get_one::<bool>("download-font").unwrap();
+            config.single_page_config.disable_js =
+                *sub_opts.get_one::<bool>("disable-js").unwrap();
             let url = sub_opts.get_one::<String>("URL").unwrap();
             let title = sub_opts.get_one::<String>("TITLE").unwrap();
             let cat = sub_opts.get_one::<String>("category").unwrap();
